@@ -16,5 +16,5 @@ app.get('/', function (req,res){
 app.use('/api/userauth', signinRoutes);
 
 app.listen(8080, function(){
-  console.log('Hello World');
+  console.log('Server running on http://localhost:8080/');
 });

@@ -10,9 +10,7 @@ const secretKey = process.env.SECRET_KEY;
 
 // Sign-Up API
 router.post("/signup", async (req, res) => {
-  console.log("signup");
   const { full_name, email, phone_number, password } = req.body;
-
   try {
     // Check if the email already exists
     const existingUser = await knex("users").where({ email }).orWhere({ phone_number }).first();
@@ -24,10 +22,8 @@ router.post("/signup", async (req, res) => {
         return res.status(400).json({ error: "Phone number is already registered",type:"phone" });
       }
     }
-
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-
     // Insert the new user
     const [newUser] = await knex('users').insert({ 
       full_name, 
@@ -36,7 +32,6 @@ router.post("/signup", async (req, res) => {
       password: hashedPassword, 
       created_at: knex.fn.now() 
       }).returning('*');
-
     // Generate JWT token
     const token = jwt.sign({ id: newUser.id, email: newUser.email }, secretKey, {
       expiresIn: "1h" // Token expiry time
@@ -48,8 +43,36 @@ router.post("/signup", async (req, res) => {
       user: newUser
     });
   } catch (error) {
-    console.error(error); // Log the error for debugging purposes
+    console.error(error); 
     res.status(500).json({ error: "An error occurred during sign-up" });
+  }
+});
+
+// Sign-In API
+router.post("/signin", async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    // Find user by email
+    const user = await knex("users").where({ email }).first();
+    if (!user) {
+      return res.status(400).json({ error: "The email address you entered isn't connected to an account.",type:'email' });
+    }
+    // Compare provided password with stored hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "The password that you've entered is incorrect.",type:'password' });
+    }
+    // Generate JWT token
+    const token = jwt.sign({ id: user.id, email: user.email }, secretKey, {
+      expiresIn: "1h" 
+    });
+    res.status(200).json({
+      message: "Sign-in successful",
+      token
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred during sign-in" });
   }
 });
 
