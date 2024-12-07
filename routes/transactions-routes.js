@@ -16,7 +16,7 @@ const verifyToken = (req, res, next) => {
   const tokenWithoutBearer = token.replace('Bearer ', '');
   jwt.verify(tokenWithoutBearer, secretKey, (err, decoded) => {
     if (err) {
-      return res.status(500).json({ error: "Failed to authenticate token" });
+      return res.status(401).json({ error: "Failed to authenticate token" });
     }
     req.userId = decoded.id;
     next();
@@ -38,5 +38,37 @@ router.get("/", verifyToken, async (req, res) => {
     res.status(500).json({ error: "An error occurred while retrieving transactions" });
   }
 })
+
+router.get("/counts", verifyToken, async (req, res) => {
+  const userId = req.userId;
+  try {
+    const income_result = await knex("transactions")
+      .sum("amount as income")
+      .where("type", "Income")
+      .andWhere("user_id", userId)
+      .first();
+    const expense_result = await knex("transactions")
+      .sum("amount as expense")
+      .where("type", "Expense")
+      .andWhere("user_id", userId)
+      .first();
+    const investment_result = await knex("transactions")
+      .sum("amount as investment")
+      .where("type", "Investment")
+      .andWhere("user_id", userId)
+      .first();
+    const income = income_result.income;
+    const expense = expense_result.expense;
+    const investment = investment_result.investment;
+    res.status(200).json({
+      message: "Total amounts calculated successfully",
+      income,
+      expense,
+      investment
+    });
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while calculating total income" });
+  }
+});
 
 export default router;
