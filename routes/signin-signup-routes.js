@@ -43,7 +43,6 @@ router.post("/signup", async (req, res) => {
       user: newUser
     });
   } catch (error) {
-    console.error(error); 
     res.status(500).json({ error: "An error occurred during sign-up" });
   }
 });
@@ -71,7 +70,6 @@ router.post("/signin", async (req, res) => {
       token
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "An error occurred during sign-in" });
   }
 });

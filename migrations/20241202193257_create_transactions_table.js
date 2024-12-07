@@ -9,7 +9,7 @@ export function up (knex) {
     table.decimal('amount', 10, 2);
     table.string('type');
     table.string('category');
-    table.string('description');
+    table.date('date');
     table.string('user_id');
     table.timestamp('created_at').defaultTo(knex.fn.now());
   });

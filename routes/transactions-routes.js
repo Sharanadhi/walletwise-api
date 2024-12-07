@@ -71,4 +71,27 @@ router.get("/counts", verifyToken, async (req, res) => {
   }
 });
 
+// add transaction
+router.post("/", verifyToken, async (req, res) => {
+  const userId = req.userId;  
+  const { amount, description, type, category, date } = req.body;
+  try {
+    const [newTransaction] = await knex('transactions').insert({ 
+      amount, 
+      description,
+      category, 
+      type, 
+      date, 
+      user_id: userId, 
+      created_at: knex.fn.now() 
+      }).returning('*');
+    res.status(201).json({
+      message: "Transaction added successfully",  
+      transaction:newTransaction
+    });
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred during sign-up" });
+  }
+});
+
 export default router;
