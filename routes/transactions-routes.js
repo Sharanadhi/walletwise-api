@@ -39,38 +39,6 @@ router.get("/", verifyToken, async (req, res) => {
   }
 })
 
-router.get("/counts", verifyToken, async (req, res) => {
-  const userId = req.userId;
-  try {
-    const income_result = await knex("transactions")
-      .sum("amount as income")
-      .where("type", "Income")
-      .andWhere("user_id", userId)
-      .first();
-    const expense_result = await knex("transactions")
-      .sum("amount as expense")
-      .where("type", "Expense")
-      .andWhere("user_id", userId)
-      .first();
-    const investment_result = await knex("transactions")
-      .sum("amount as investment")
-      .where("type", "Investment")
-      .andWhere("user_id", userId)
-      .first();
-    const income = income_result.income;
-    const expense = expense_result.expense;
-    const investment = investment_result.investment;
-    res.status(200).json({
-      message: "Total amounts calculated successfully",
-      income,
-      expense,
-      investment
-    });
-  } catch (error) {
-    res.status(500).json({ error: "An error occurred while calculating total income" });
-  }
-});
-
 // add transaction
 router.post("/", verifyToken, async (req, res) => {
   const userId = req.userId;  
@@ -91,6 +59,72 @@ router.post("/", verifyToken, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: "An error occurred during sign-up" });
+  }
+});
+
+router.get("/amounts", verifyToken, async (req, res) => {
+  const userId = req.userId;
+  try {
+    const income_result = await knex("transactions")
+      .sum("amount as income")
+      .where("type", "Income")
+      .andWhere("user_id", userId)
+      .first();
+    const expense_result = await knex("transactions")
+      .sum("amount as expense")
+      .where("type", "Expense")
+      .andWhere("user_id", userId)
+      .first();
+    const investment_result = await knex("transactions")
+      .sum("amount as investment")
+      .where("type", "Investment")
+      .andWhere("user_id", userId)
+      .first();
+    
+    const income = income_result.income;
+    const expense = expense_result.expense;
+    const investment = investment_result.investment;
+    res.status(200).json({
+      message: "Total amounts calculated successfully",
+      income,
+      expense,
+      investment
+    });
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while calculating amounts" });
+  }
+});
+
+router.get("/counts", verifyToken, async (req, res) => {
+  const userId = req.userId;
+  try {
+    const income_result = await knex("transactions")
+      .count("id as total_income_transactions")
+      .where("type", "Income")
+      .andWhere("user_id", userId)
+      .first();
+    const expense_result = await knex("transactions")
+      .count("id as total_expense_transactions")
+      .where("type", "Expense")
+      .andWhere("user_id", userId)
+      .first();
+    const investment_result = await knex("transactions")
+      .count("id as total_investment_transactions")
+      .where("type", "Investment")
+      .andWhere("user_id", userId)
+      .first();
+    
+    const income = income_result.total_income_transactions;
+    const expense = expense_result.total_expense_transactions;
+    const investment = investment_result.total_investment_transactions;
+    res.status(200).json({
+      message: "Total counts calculated successfully",
+      income,
+      expense,
+      investment
+    });
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while calculating total income" });
   }
 });
 
